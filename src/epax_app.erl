@@ -33,7 +33,7 @@
 
 %% install/0
 %% ====================================================================
-%% @doc installs epax, initialize index
+%% @doc installs epax, initializes index
 -spec install() -> ok.
 %% ====================================================================
 install() ->
