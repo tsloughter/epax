@@ -220,10 +220,10 @@ check_apps(ExistingApps) ->
     case write_to_index_file(Apps) of
         ok ->
             lists:foreach(fun(Dir) ->
-                    Path = epax_os:get_abs_path(filename:join("packages", Dir)),
-                    epax_os:rmdir(Path)
-                end,
-                ExtraDirs);
+                Path = epax_os:get_abs_path(filename:join("packages", Dir)),
+                epax_os:rmdir(Path)
+            end,
+            ExtraDirs);
         {error, _} = E ->
             E
     end.

@@ -25,12 +25,12 @@ get_abs_path_test_() ->
     fun() -> meck:new([]) end,
     fun(_) -> meck:unload([]) end,
     [{"test for get_abs_path function",
-    fun() ->    
+    fun() ->
         {ok, [[Home]]} = init:get_argument(home),
         ?assertEqual(filename:join([Home, ".epax"]), epax_os:get_abs_path(""))
     end},
     {"test for get_abs_path function for dir",
-    fun() ->    
+    fun() ->
         {ok, [[Home]]} = init:get_argument(home),
         ?assertEqual(filename:join([Home, ".epax/aman"]), epax_os:get_abs_path("aman"))
     end}]}.

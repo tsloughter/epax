@@ -28,12 +28,12 @@ bundle_test_() ->
     fun(_) -> meck:unload([epax_index, epax_os, epax_com]) end,
     [{"test for bundle",
     fun() ->
-        A_appfile_content = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
-        B_appfile_content = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
-        C_appfile_content = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
-        D_appfile_content = {application, d, [{included_applications, [e, stdlib, kernel]}]},
-        E_appfile_content = {application, e, [{applications, [kernel, stdlib]}]},
-        F_appfile_content = {application, f, [{applications, [kernel, stdlib]}]},
+        AAppfileContent = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
+        BAppfileContent = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
+        CAppfileContent = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
+        DAppfileContent = {application, d, [{included_applications, [e, stdlib, kernel]}]},
+        EAppfileContent = {application, e, [{applications, [kernel, stdlib]}]},
+        FAppfileContent = {application, f, [{applications, [kernel, stdlib]}]},
 
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
@@ -56,16 +56,16 @@ bundle_test_() ->
             (e) -> {ok, e};
             (f) -> {ok, f}
         end),
-        
+
         % mocking the call to get_appfile_content function
         meck:expect(epax_com, get_appfile_content,
             fun
-                (a) -> {ok, [A_appfile_content]};
-                (b) -> {ok, [B_appfile_content]};
-                (c) -> {ok, [C_appfile_content]};
-                (d) -> {ok, [D_appfile_content]};
-                (e) -> {ok, [E_appfile_content]};
-                (f) -> {ok, [F_appfile_content]}
+                (a) -> {ok, [AAppfileContent]};
+                (b) -> {ok, [BAppfileContent]};
+                (c) -> {ok, [CAppfileContent]};
+                (d) -> {ok, [DAppfileContent]};
+                (e) -> {ok, [EAppfileContent]};
+                (f) -> {ok, [FAppfileContent]}
             end),
         meck:expect(epax_com, console, fun("Copying ~p~n", [f]) ->
                                                ok;
@@ -76,7 +76,7 @@ bundle_test_() ->
                                           ("Copying ~p~n", [c]) ->
                                                ok;
                                           ("Copying ~p~n", [b]) ->
-                                               ok end), 
+                                               ok end),
 
         ?assertEqual(ok, epax_dep:bundle(a)),
 
@@ -111,12 +111,12 @@ bundle_test_() ->
     end},
     {"test for bundle when some app is not already added",
     fun() ->
-        A_appfile_content = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
-        B_appfile_content = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
-        C_appfile_content = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
-        D_appfile_content = {application, d, [{included_applications, [e, stdlib, kernel]}]},
-        E_appfile_content = {application, e, [{applications, [kernel, stdlib]}]},
-        F_appfile_content = {application, f, [{applications, [kernel, stdlib]}]},
+        AAppfileContent = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
+        BAppfileContent = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
+        CAppfileContent = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
+        DAppfileContent = {application, d, [{included_applications, [e, stdlib, kernel]}]},
+        EAppfileContent = {application, e, [{applications, [kernel, stdlib]}]},
+        FAppfileContent = {application, f, [{applications, [kernel, stdlib]}]},
 
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
@@ -133,12 +133,12 @@ bundle_test_() ->
 
         % mocking the call to get_appfile_content function
         meck:expect(epax_com, get_appfile_content, fun
-            (a) -> {ok, [A_appfile_content]};
-            (b) -> {ok, [B_appfile_content]};
-            (c) -> {ok, [C_appfile_content]};
-            (d) -> {ok, [D_appfile_content]};
-            (e) -> {ok, [E_appfile_content]};
-            (f) -> {ok, [F_appfile_content]}
+            (a) -> {ok, [AAppfileContent]};
+            (b) -> {ok, [BAppfileContent]};
+            (c) -> {ok, [CAppfileContent]};
+            (d) -> {ok, [DAppfileContent]};
+            (e) -> {ok, [EAppfileContent]};
+            (f) -> {ok, [FAppfileContent]}
         end),
         meck:expect(epax_com, format, fun("~s does not exist", [f]) -> "f does not exist" end),
 
@@ -169,9 +169,9 @@ bundle_test_() ->
     end},
     {"test for bundle when app_exists returns error",
     fun() ->
-        A_appfile_content = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, ssl]}]},
-        B_appfile_content = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c]}]},
-        C_appfile_content = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [sasl]}]},
+        AAppfileContent = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, ssl]}]},
+        BAppfileContent = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c]}]},
+        CAppfileContent = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [sasl]}]},
 
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
@@ -182,12 +182,12 @@ bundle_test_() ->
             (b) -> {error, "error"};
             (c) -> {ok, c}
         end),
-        
+
         % mocking the call to get_appfile_content function
         meck:expect(epax_com, get_appfile_content, fun
-            (a) -> {ok, [A_appfile_content]};
-            (b) -> {ok, [B_appfile_content]};
-            (c) -> {ok, C_appfile_content}
+            (a) -> {ok, [AAppfileContent]};
+            (b) -> {ok, [BAppfileContent]};
+            (c) -> {ok, CAppfileContent}
         end),
 
         ?assertEqual({error, "error"}, epax_dep:bundle(a)),
@@ -204,11 +204,11 @@ bundle_test_() ->
     end},
     {"test for bundle when get_appfile_content returns error",
     fun() ->
-        A_appfile_content = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
-        B_appfile_content = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
-        C_appfile_content = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
-        D_appfile_content = {application, d, [{included_applications, [e, stdlib, kernel]}]},
-        F_appfile_content = {application, f, [{applications, [kernel, stdlib]}]},
+        AAppfileContent = {application, a, [{applications, [kernel, stdlib, sasl]}, {included_applications, [b, c, d, ssl]}]},
+        BAppfileContent = {application, b, [{applications, [kernel, stdlib, ssl]}, {included_applications, [c, e, f]}]},
+        CAppfileContent = {application, c, [{applications, [kernel, stdlib]}, {included_applications, [f, sasl]}]},
+        DAppfileContent = {application, d, [{included_applications, [e, stdlib, kernel]}]},
+        FAppfileContent = {application, f, [{applications, [kernel, stdlib]}]},
 
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
@@ -231,15 +231,15 @@ bundle_test_() ->
             (e) -> {ok, e};
             (f) -> {ok, f}
         end),
-        
+
         % mocking the call to get_appfile_content function
         meck:expect(epax_com, get_appfile_content, fun
-            (a) -> {ok, [A_appfile_content]};
-            (b) -> {ok, [B_appfile_content]};
-            (c) -> {ok, [C_appfile_content]};
-            (d) -> {ok, [D_appfile_content]};
+            (a) -> {ok, [AAppfileContent]};
+            (b) -> {ok, [BAppfileContent]};
+            (c) -> {ok, [CAppfileContent]};
+            (d) -> {ok, [DAppfileContent]};
             (e) -> {error, "error"};
-            (f) -> {ok, [F_appfile_content]}
+            (f) -> {ok, [FAppfileContent]}
         end),
 
         ?assertEqual({error, "error"}, epax_dep:bundle(a)),

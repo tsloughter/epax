@@ -11,4 +11,4 @@ otp_release:
 script: "make rebuild"
 branches:
   only:
-    - feature_basic_git
+    - master

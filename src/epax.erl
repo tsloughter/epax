@@ -97,7 +97,7 @@ handle_options(Options) ->
     print_help().
 
 print_help() ->
-    Help_Message = << <<?EPAX>>/binary, <<" (Erlang Package Manager) version ">>/binary, <<?VERSION>>/binary, <<"
+    HelpMessage = << <<?EPAX>>/binary, <<" (Erlang Package Manager) version ">>/binary, <<?VERSION>>/binary, <<"
 Usage: ">>/binary, <<?EPAX>>/binary, <<" command [options]
 
 Commands:
@@ -114,12 +114,12 @@ Options:
   -v, --version       Show the current version
 
 ">>/binary>>,
-    io:put_chars(Help_Message).
+    io:put_chars(HelpMessage).
 
 print_version() ->
-    Version_Message = << <<?EPAX>>/binary, <<" (Erlang Package Manager) version ">>/binary, <<?VERSION>>/binary, <<"
+    VersionMessage = << <<?EPAX>>/binary, <<" (Erlang Package Manager) version ">>/binary, <<?VERSION>>/binary, <<"
 ">>/binary >>,
-    io:put_chars(Version_Message).
+    io:put_chars(VersionMessage).
 
 % help subcommand add
 option_spec_list_for_add() ->

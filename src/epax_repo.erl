@@ -117,7 +117,7 @@ download_repo(svn, Link, Path) ->
 get_info(RepoType, Link, Path) ->
     case get_app_info(RepoType, Link, Path) of
         {ok, App} = Ret ->
-            To = filename:join(epax_os:get_abs_path("packages/"), App#application.name),
+            To = filename:join(epax_os:get_abs_path("packages"), App#application.name),
             epax_os:mv_folder(Path, To),
             Ret;
         {error, _} = E ->

@@ -40,7 +40,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("packages/appname/ebin/meck.app") -> ok end),
         meck:expect(file, list_dir, fun("packages/appname/ebin") ->
@@ -58,7 +58,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("packages/appname/src/meck.app.src") -> ok end),
         meck:expect(file, list_dir, fun
@@ -78,7 +78,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("packages/appname/src/meck.app.src") -> ok end),
         meck:expect(file, list_dir, fun
@@ -99,7 +99,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("packages/appname/src/meck.app.src") -> ok end),
         meck:expect(file, list_dir, fun
@@ -121,7 +121,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("packages/appname/src/meck.app.src") -> ok end),
         meck:expect(file, list_dir, fun
@@ -143,7 +143,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, list_dir, fun
             ("packages/appname/ebin") ->
@@ -163,7 +163,7 @@ get_appfile_content_test_() ->
     fun() ->
         % mocking get_abs_path function
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        
+
         % mocking functions of file module
         meck:expect(file, consult, fun("temp/src/meck.app.src") -> ok end),
         meck:expect(file, list_dir, fun

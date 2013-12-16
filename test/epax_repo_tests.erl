@@ -29,11 +29,11 @@ clone_app_test_() ->
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
         meck:expect(filelib, is_dir, fun("packages/temp") -> true end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("", "svn checkout link.svn packages/temp") ->
                                                 ok;
                                             ("packages/temp", "svnversion") ->
@@ -54,11 +54,11 @@ clone_app_test_() ->
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
         meck:expect(filelib, is_dir, fun("packages/temp") -> true end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("", "svn checkout link.svn packages/temp") ->
                                                 ok;
                                             ("packages/temp", "svnversion") ->
@@ -79,11 +79,11 @@ clone_app_test_() ->
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
         meck:expect(filelib, is_dir, fun("packages/temp") -> true end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("", "bzr branch lp:link packages/temp") ->
                                                 ok;
                                             ("packages/temp", "bzr revno") ->
@@ -104,11 +104,11 @@ clone_app_test_() ->
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
         meck:expect(filelib, is_dir, fun("packages/temp") -> true end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/temp") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("", "git clone .git packages/temp") ->
                                                 ok;
                                             ("packages/temp", "git tag") ->
@@ -148,7 +148,7 @@ clone_app_test_() ->
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
         meck:expect(epax_os, run_in_dir, fun("", "git clone .git packages/temp") -> ok end),
-        meck:expect(filelib, is_dir, fun("packages/temp") -> false end), 
+        meck:expect(filelib, is_dir, fun("packages/temp") -> false end),
         ?assertEqual({error, "Unable to download repo"}, epax_repo:clone_app(".git", [])),
         ?assertEqual(1, meck:num_calls(epax_os, get_abs_path, ["packages/temp"]))
     end},
@@ -167,11 +167,11 @@ update_repo_test_() ->
     [{"test for update_repo function for svn",
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("packages/app1", "svn update") ->
                                                 {ok, data};
                                             ("packages/app1", "svnversion") ->
@@ -193,19 +193,19 @@ update_repo_test_() ->
     {"test for update_repo function for bzr",
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("packages/app1", "bzr update") ->
                                                 {ok, data};
                                             ("packages/app1", "bzr revno") ->
                                                 "  48\n" end),
 
-        App = #application{name=app1, repo_link="launchpad.com/~~link", repo_type=bzr, details=[]},
+        App = #application{name=app1, repo_link="launchpad.com/~link", repo_type=bzr, details=[]},
         ?assertEqual({ok, #application{name=app1,
-                                       repo_link="launchpad.com/~~link",
+                                       repo_link="launchpad.com/~link",
                                        repo_type=bzr,
                                        details=[{description, "description"},
                                                 {publisher, "author"},
@@ -219,11 +219,11 @@ update_repo_test_() ->
     {"test for update_repo function 1 for git",
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("packages/app1", "git pull") ->
                                                 {ok, data};
                                             ("packages/app1", "git tag") ->
@@ -252,11 +252,11 @@ update_repo_test_() ->
     {"test for update_repo function 2 for git",
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"},
                                                      {description, "description"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("packages/app1", "git pull") ->
                                                 {ok, data};
                                             ("packages/app1", "git tag") ->
@@ -282,10 +282,10 @@ update_repo_test_() ->
     {"test for update_repo function 3 for git",
     fun() ->
         meck:expect(epax_os, get_abs_path, fun(X) -> X end),
-        Appfile_content = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
+        AppfileContent = {ok, [{application, app1, [{applications, [kernel, stdlib, sasl]},
                                                      {included_applications, [b, c, d, ssl]},
                                                      {author, "author"}]}]},
-        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> Appfile_content end),
+        meck:expect(epax_com, get_appfile_content, fun("packages/app1") -> AppfileContent end),
         meck:expect(epax_os, run_in_dir, fun("packages/app1", "git pull") ->
                                                 "ok";
                                             ("packages/app1", "git tag") ->

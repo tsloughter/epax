@@ -77,10 +77,10 @@ find_all_deps_recursively_helper([H|T], AlreadyAdded) ->
 
 find_all_deps_for(Appname) ->
     case epax_index:app_exists(Appname) of
-        {ok, Appname} ->
-            find_all_deps_for_helper(Appname);
         {ok, false} ->
             {error, epax_com:format("~s does not exist", [Appname])};
+        {ok, Appname} ->
+            find_all_deps_for_helper(Appname);
         {error, _} = E ->
             E
     end.
@@ -90,17 +90,17 @@ find_all_deps_for_helper(Appname) ->
         {ok, [AppContent]} ->
             AppDetails = element(3, AppContent),
             IncludeApps = case lists:keyfind(included_applications, 1, AppDetails) of
-                    false ->
-                        [];
-                    {included_applications, List} ->
-                        List
-                end,
+                false ->
+                    [];
+                {included_applications, List} ->
+                    List
+            end,
             App = case lists:keyfind(applications, 1, AppDetails) of
-                    false ->
-                        [];
-                    {applications, L} ->
-                        L
-                end,
+                false ->
+                    [];
+                {applications, L} ->
+                    L
+            end,
             AllApps = lists:append(IncludeApps, App),
             {ok, delete_standard_apps(AllApps)};
         {error, _} = E ->
@@ -109,12 +109,12 @@ find_all_deps_for_helper(Appname) ->
 
 delete_standard_apps(Deps) ->
     lists:filter(fun(X) ->
-            case lists:member(X, ?STAND_APPS) of
-                true -> false;
-                false -> true
-            end
-        end,
-        Deps).
+        case code:lib_dir(X) of
+            {error, bad_name} -> true;
+            _ -> false
+        end
+    end,
+    Deps).
 
 copy_all_deps(Deps, Appname) ->
     ToDepsFolder = filename:join([epax_os:get_abs_path("packages"), atom_to_list(Appname), "deps"]),

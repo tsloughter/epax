@@ -91,7 +91,7 @@ copy_folder(From, To) ->
     mkdir(To),
     case os:type() of
         {unix, _} ->
-            Cmd = epax_com:format(["cp -ir ", From, " ", To]);
+            Cmd = epax_com:format(["cp -fr ", From, " ", To]);
         {win32, _} ->
             Cmd = epax_com:format(["xcopy ", From, " ", To, " /s/e"])
     end,
@@ -178,7 +178,7 @@ run_in_dir(Path, Cmd) ->
 cmd(Cmd) ->
     Port = erlang:open_port({spawn, Cmd}, [exit_status]),
     loop(Port, []).
-    
+
 loop(Port, Data) ->
     receive
         {Port, {data, NewData}} ->

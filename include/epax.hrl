@@ -25,11 +25,3 @@
 
 % index entry record
 -record(application, {name, repo_link, repo_type, details}).
-
-% standard applications list
--define(STAND_APPS, [appmon, asn1, compiler, crypto, debugger, diameter, eldap,
-                     erl_interface, erts, et, gs, hipe, inets, jinterface, kernel,
-                     megaco, mnesia, observer, odbc, os_mon, otp_mibs, parsetools,
-                     percept, pman, public_key, reltool, runtime_tools, sasl, snmp,
-                     ssh, ssl, stdlib, syntax_tools, toolbar,  tools, tv, webtool,
-                     wx, xmerl]).

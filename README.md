@@ -2,11 +2,11 @@ epax
 ====
 Erlang Package Manager 1.0.0
 
-[![Build Status](https://travis-ci.org/mangalaman93/epax.png?branch=feature_basic_git)](https://travis-ci.org/mangalaman93/epax)
+[![Build Status](https://travis-ci.org/mangalaman93/epax.png?branch=master)](https://travis-ci.org/mangalaman93/epax)
 
 Structure of index file
 -----------------------
-The index contains the information about the OTP Application in the following format-
+The index contains the information about the OTP Application in the following format:
 
     {Appname, LinkToRepo, RepoType, [Info]}
 

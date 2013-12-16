@@ -82,7 +82,7 @@ success(Message) ->
 %% @doc prints successful completion message on terminal
 -spec success(Message, Args) -> ok when
     Message :: string(),
-    Args    ::[term()].
+    Args    :: [term()].
 %% ====================================================================
 success(Message, Args) ->
     epax_com:success(epax_com:format(Message, Args)).
