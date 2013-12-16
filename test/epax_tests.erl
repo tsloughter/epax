@@ -77,6 +77,13 @@ main_test_() ->
         ?assertEqual(1, meck:num_calls(epax_app, bundle, [appname])),
         ?assert(meck:validate(epax_app))
     end},
+    {"test for show command",
+    fun() ->
+        meck:expect(epax_app, show, fun(appname) -> ok end),
+        ?assertEqual(ok, epax:main(["show", "appname"])),
+        ?assertEqual(1, meck:num_calls(epax_app, show, [appname])),
+        ?assert(meck:validate(epax_app))
+    end},
     {"test for invalid commands",
     fun() ->
         meck:expect(getopt, parse, fun([{help,        $h,        "help",        undefined,             "Show the program options"},

@@ -62,6 +62,8 @@ main(["check"]) ->
     epax_app:check();
 main(["bundle"|[Appname]]) ->
     epax_app:bundle(list_to_atom(Appname));
+main(["show"|[Appname]]) ->
+    epax_app:show(list_to_atom(Appname));
 main(Args) ->
     OptSpecList = option_spec_list(),
     case getopt:parse(OptSpecList, Args) of
@@ -108,6 +110,7 @@ Commands:
   update              Update details of all packages in the index
   check               Try to fix broken packages if any, updates the index as well
   bundle <appname>    Figure out dependencies for the package and copies all non-standard packages
+  show   <appname>    Print detailed information of the package
 
 Options:
   -h, --help          Show the commands and options (this message)

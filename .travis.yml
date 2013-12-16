@@ -12,3 +12,4 @@ script: "make rebuild"
 branches:
   only:
     - master
+    - feature_basic_git

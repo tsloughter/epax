@@ -24,6 +24,7 @@
 -include("epax.hrl").
 -export([init/0,
 		 app_exists/1,
+         get_index_entry/1,
 		 checkout_repo_and_add_to_index/2,
          remove_from_index/1,
          get_applist/0,
@@ -66,6 +67,29 @@ app_exists(Info) ->
     case file:consult(epax_os:get_abs_path("index.cfg")) of
         {ok, [ExistingApps]} ->
             {ok, app_exists(Info, ExistingApps)};
+        {error, _} ->
+            {error, "Run `epax init` before running other epax commands"}
+    end.
+
+%% get_index_entry/1
+%% ====================================================================
+%% @doc returns the application tuple stored in the index for the given
+%% package/application
+-spec get_index_entry(Appname) -> Result when
+    Appname :: atom(),
+    Result  :: {ok, #application{}}
+             | {error, Reason},
+    Reason  :: term().
+%% ====================================================================
+get_index_entry(Appname) ->
+    case file:consult(epax_os:get_abs_path("index.cfg")) of
+        {ok, [ExistingApps]} ->
+            case lists:keyfind(Appname, #application.name, ExistingApps) of
+                false ->
+                    {error, not_found};
+                Ret ->
+                    {ok, Ret}
+            end;
         {error, _} ->
             {error, "Run `epax init` before running other epax commands"}
     end.

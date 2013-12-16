@@ -22,7 +22,8 @@
 
 -module(epax_dep).
 -include("epax.hrl").
--export([bundle/1]).
+-export([bundle/1,
+         find_all_deps_for/1]).
 
 
 %%============================================================================
@@ -43,6 +44,26 @@ bundle(Appname) ->
     case find_all_deps_recursively_for(Appname) of
         {ok, Deps} ->
             copy_all_deps(Deps, Appname);
+        {error, _} = E ->
+            E
+    end.
+
+%% final_all_deps_for/1
+%% ====================================================================
+%% @doc returns all no standard list of direct dependent applications for
+%% given application/package (i.e. not recursively)
+-spec find_all_deps_for(Appname) -> Result when
+    Appname :: atom(),
+    Result  :: {ok, [atom()]}
+             | {error, Reason},
+    Reason  :: term().
+%% ====================================================================
+find_all_deps_for(Appname) ->
+    case epax_index:app_exists(Appname) of
+        {ok, false} ->
+            {error, epax_com:format("~s does not exist", [Appname])};
+        {ok, Appname} ->
+            find_all_deps_for_helper(Appname);
         {error, _} = E ->
             E
     end.
@@ -73,16 +94,6 @@ find_all_deps_recursively_helper([H|T], AlreadyAdded) ->
             end;
         true ->
             find_all_deps_recursively_helper(T, AlreadyAdded)
-    end.
-
-find_all_deps_for(Appname) ->
-    case epax_index:app_exists(Appname) of
-        {ok, false} ->
-            {error, epax_com:format("~s does not exist", [Appname])};
-        {ok, Appname} ->
-            find_all_deps_for_helper(Appname);
-        {error, _} = E ->
-            E
     end.
 
 find_all_deps_for_helper(Appname) ->

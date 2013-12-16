@@ -118,6 +118,43 @@ app_exists_test_() ->
         ?assertEqual(1, meck:num_calls(file, consult, ["index.cfg"]))
     end}]}.
 
+get_index_entry_test_() ->
+    {foreach,
+    fun() -> meck:new([epax_os, file], [unstick, passthrough]) end,
+    fun(_) -> meck:unload([epax_os, file]) end,
+    [{"test for get_index_entry",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[]}]]} end),
+
+        ?assertEqual({ok, #application{name=app1, repo_link="link1", repo_type=git, details=[]}},
+                     epax_index:get_index_entry(app1)),
+        ?assertEqual(1, meck:num_calls(epax_os, get_abs_path, ["index.cfg"])),
+        ?assertEqual(1, meck:num_calls(file, consult, ["index.cfg"]))
+    end},
+    {"test for get_index_entry when app does not exists",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[]}]]} end),
+
+        ?assertEqual({error, not_found},
+                     epax_index:get_index_entry(app3)),
+        ?assertEqual(1, meck:num_calls(epax_os, get_abs_path, ["index.cfg"])),
+        ?assertEqual(1, meck:num_calls(file, consult, ["index.cfg"]))
+    end},
+    {"test for get_index_entry when index file does not exists",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {error, ""} end),
+
+        ?assertEqual({error, "Run `epax init` before running other epax commands"},
+                     epax_index:get_index_entry(app3)),
+        ?assertEqual(1, meck:num_calls(epax_os, get_abs_path, ["index.cfg"])),
+        ?assertEqual(1, meck:num_calls(file, consult, ["index.cfg"]))
+    end}]}.
+
 checkout_repo_and_add_to_index_test_() ->
     {foreach,
     fun() -> meck:new([epax_os, epax_repo, file], [unstick, passthrough]) end,

@@ -21,13 +21,15 @@
 %%%
 
 -module(epax_app).
+-include("epax.hrl").
 -export([init/0,
          add_app/2,
          remove_app/1,
          list_apps/0,
          update/0,
+         check/0,
          bundle/1,
-         check/0]).
+         show/1]).
 
 
 %%============================================================================
@@ -129,7 +131,7 @@ check() ->
             epax_com:error(Reason, "Unable to fix broken packages, reinitialized the index")
     end.
 
-%% bundle/0
+%% bundle/1
 %% ====================================================================
 %% @doc bundles the app, finds all the dependencies and copies them into the
 %% deps folder inside the app folder
@@ -142,4 +144,53 @@ bundle(Appname) ->
             epax_com:success("~s bundled successfully", [Appname]);
         {error, Reason} ->
             epax_com:error(Reason, "Unable to bundle ~s", [Appname])
+    end.
+
+%% show/1
+%% ====================================================================
+%% @doc prints detailed information about the application
+-spec show(Appname) -> ok when
+    Appname :: atom().
+%% ====================================================================
+show(Appname) ->
+    case epax_index:get_index_entry(Appname) of
+        {ok, App} ->
+            FmtdDetails = format_details(Appname, App#application.details),
+            Eqs = string:copies("=", 9-round(length(atom_to_list(Appname))/2)),
+            epax_com:success("~s ~s ~s~s~n====================", [Eqs, Appname, Eqs, FmtdDetails]);
+        {error, Reason} ->
+            epax_com:error(Reason, "Unable to locate package ~s", [Appname])
+    end.
+
+
+%%%===================================================================
+%%% Internal Functions
+%%%===================================================================
+
+format_details(Appname, Details) ->
+    AllDeps = case epax_dep:find_all_deps_for(Appname) of
+        {ok, []} ->
+            ['no dependencies'];
+        {ok, Deps} ->
+            Deps;
+        {error, _Reason} ->
+            ['unable to find dependencies']
+    end,
+    epax_com:format([
+        io_lib:format("~nStatus: ~s", ["installed"]),
+        io_lib:format("~nPublisher: ~s", [keyfind(publisher, 1, Details)]),
+        io_lib:format("~nLatest Version: ~s", [keyfind(tags, 1, Details)]),
+        io_lib:format("~nDepends: ~s", [string:join(lists:map(fun atom_to_list/1, AllDeps), ", ")]),
+        io_lib:format("~nDescription: ~s", [keyfind(description, 1, Details)])]).
+
+keyfind(Key, N, TupleList) ->
+    case lists:keyfind(Key, N, TupleList) of
+        {Key, []} ->
+            "unknown";
+        {Key, [H|_T]} when is_list(H) ->
+            H;
+        {Key, Value} ->
+            Value;
+        false ->
+            "unknown"
     end.
