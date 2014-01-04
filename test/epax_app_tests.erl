@@ -215,24 +215,26 @@ show_test_() ->
     fun(_) -> meck:unload([epax_index, epax_com, epax_dep]) end,
     [{"test for show application",
     fun() ->
-        meck:expect(epax_index, get_index_entry, fun(appname) ->
+        meck:expect(epax_index, get_index_entry, fun(app1) ->
                 {ok, #application{name=app1,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {tags, ["tag"]}, {description, "description"}]}}
             end),
-        meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
+        meck:expect(epax_dep, find_all_deps_for, fun(app1) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=======", app1, "=======",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]) ->
-                ok
+                "formatted"
             end),
+        meck:expect(epax_com, success, fun("~s====================", ["formatted"]) -> ok end),
 
-        ?assertEqual(ok, epax_app:show(appname)),
-        ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]]))
+        ?assertEqual(ok, epax_app:show(app1)),
+        ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [app1])),
+        ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [app1])),
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=======", app1, "=======", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", ["formatted"]]))
     end},
     {"test for show application when app is not found in index",
     fun() ->
@@ -242,153 +244,168 @@ show_test_() ->
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(0, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(0, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]]))
+        ?assertEqual(0, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]])),
+        ?assertEqual(0, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when dependencies are not found",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {tags, ["tag"]}, {description, "description"}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {error, "error"} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: unable to find dependencies\nDescription: description"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: unable to find dependencies\nDescription: description"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: unable to find dependencies\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when publisher is unknown",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, []}, {tags, ["tag"]}, {description, "description"}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: unknown\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: unknown\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: unknown\nLatest Version: tag\nDepends: dep1, dep2\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when no tags are available",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {tags, []}, {description, "description"}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when description is empty",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {tags, ["tag"]}, {description, []}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: unknown"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: unknown"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: dep1, dep2\nDescription: unknown"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when no dependencies",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {tags, ["tag"]}, {description, "description"}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, []} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: no dependencies\nDescription: description"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: no dependencies\nDescription: description"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: tag\nDepends: no dependencies\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when key does not exist -1",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[{publisher, "publisher"}, {description, "description"}]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: publisher\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: description"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end},
     {"test for show application when key does not exist",
     fun() ->
         meck:expect(epax_index, get_index_entry, fun(appname) ->
-                {ok, #application{name=app1,
+                {ok, #application{name=appname,
                      repo_link="link1",
                      repo_type=git,
                      details=[]}}
             end),
         meck:expect(epax_dep, find_all_deps_for, fun(appname) -> {ok, [dep1, dep2]} end),
         meck:expect(epax_com, format, fun(X) -> lists:flatten(X) end),
-        meck:expect(epax_com, success, fun("~s ~s ~s~s~n====================", ["=====", appname, "=====",
+        meck:expect(epax_com, format, fun("~s ~s ~s~s~n", ["=====", appname, "=====",
          "\nStatus: installed\nPublisher: unknown\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: unknown"]) ->
                 ok
             end),
+        meck:expect(epax_com, success, fun("~s====================", [ok]) -> ok end),
 
         ?assertEqual(ok, epax_app:show(appname)),
         ?assertEqual(1, meck:num_calls(epax_index, get_index_entry, [appname])),
         ?assertEqual(1, meck:num_calls(epax_dep, find_all_deps_for, [appname])),
-        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s ~s ~s~s~n====================",
-            ["=====", appname, "=====", "\nStatus: installed\nPublisher: unknown\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: unknown"]]))
+        ?assertEqual(1, meck:num_calls(epax_com, format, ["~s ~s ~s~s~n",
+            ["=====", appname, "=====", "\nStatus: installed\nPublisher: unknown\nLatest Version: unknown\nDepends: dep1, dep2\nDescription: unknown"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s====================", [ok]]))
     end}]}.

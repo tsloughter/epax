@@ -75,7 +75,7 @@ console(Message, Args) ->
     Message :: string().
 %% ====================================================================
 success(Message) ->
-    io:format("=> Success~n~s.~n", [Message]).
+    io:format("=> Success~n~s~n", [Message]).
 
 %% success/2
 %% ====================================================================
@@ -97,7 +97,7 @@ success(Message, Args) ->
 error(Reason, Conclusion) ->
     io:format("** Error occurred: "),
     io:format(Reason),
-    io:format("~n~s.~n", [Conclusion]).
+    io:format("~n~s~n", [Conclusion]).
 
 %% error/3
 %% ====================================================================

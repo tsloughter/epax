@@ -29,7 +29,8 @@
          update/0,
          check/0,
          bundle/1,
-         show/1]).
+         show/1,
+         format_app/1]).
 
 
 %%============================================================================
@@ -155,12 +156,22 @@ bundle(Appname) ->
 show(Appname) ->
     case epax_index:get_index_entry(Appname) of
         {ok, App} ->
-            FmtdDetails = format_details(Appname, App#application.details),
-            Eqs = string:copies("=", 9-round(length(atom_to_list(Appname))/2)),
-            epax_com:success("~s ~s ~s~s~n====================", [Eqs, Appname, Eqs, FmtdDetails]);
+            epax_com:success("~s====================", [format_app(App)]);
         {error, Reason} ->
             epax_com:error(Reason, "Unable to locate package ~s", [Appname])
     end.
+
+%% format_app/1
+%% ====================================================================
+%% @doc returns a package details in printable format
+-spec format_app(App) -> term() when
+    App :: #application{}.
+%% ====================================================================
+format_app(App) ->
+    Appname = App#application.name,
+    FmtdDetails = format_details(Appname, App#application.details),
+    Eqs = string:copies("=", 9-round(length(atom_to_list(Appname))/2)),
+    epax_com:format("~s ~s ~s~s~n", [Eqs, Appname, Eqs, FmtdDetails]).
 
 
 %%%===================================================================
