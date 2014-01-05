@@ -45,3 +45,5 @@ COMMANDS
     update              Update details of all packages in the index
     check               Try to fix broken packages if any, updates the index as well
     bundle <appname>    Figure out dependencies for the package and copies all non-standard packages
+    show   <appname>    Print detailed information of the package
+    search <regex>      Performs full text search on available package lists

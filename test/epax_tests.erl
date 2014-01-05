@@ -22,8 +22,8 @@
 
 main_test_() ->
     {foreach,
-    fun() -> meck:new([getopt, epax_app, epax_com], [unstick, passthrough]) end,
-    fun(_) -> meck:unload([getopt, epax_app, epax_com]) end,
+    fun() -> meck:new([getopt, epax_app, epax_com, epax_index], [unstick, passthrough]) end,
+    fun(_) -> meck:unload([getopt, epax_app, epax_com, epax_index]) end,
     [{"test for empty command",
     fun() ->
         ?assertEqual(ok, epax:main([]))
@@ -83,6 +83,13 @@ main_test_() ->
         ?assertEqual(ok, epax:main(["show", "appname"])),
         ?assertEqual(1, meck:num_calls(epax_app, show, [appname])),
         ?assert(meck:validate(epax_app))
+    end},
+    {"test for search command",
+    fun() ->
+        meck:expect(epax_index, search, fun("regex", []) -> ok end),
+        ?assertEqual(ok, epax:main(["search", "regex"])),
+        ?assertEqual(1, meck:num_calls(epax_index, search, ["regex", []])),
+        ?assert(meck:validate(epax_index))
     end},
     {"test for invalid commands",
     fun() ->

@@ -23,13 +23,14 @@
 -module(epax_index).
 -include("epax.hrl").
 -export([init/0,
-		 app_exists/1,
+         app_exists/1,
          get_index_entry/1,
-		 checkout_repo_and_add_to_index/2,
+         checkout_repo_and_add_to_index/2,
          remove_from_index/1,
          get_applist/0,
          update_index/0,
-         check_index/0]).
+         check_index/0,
+         search/2]).
 
 
 %%============================================================================
@@ -195,6 +196,48 @@ check_index() ->
             E
     end.
 
+%% search/2
+%% ====================================================================
+%% @doc performs a full text search for given regular expression in the
+%% list of installed packages. Various options can be provided to control
+%% the search domain
+-spec search(Regex, Option) -> ok | {error, Reason} when
+    Regex  :: string(),
+    Option :: [term()],
+    Reason :: term().
+%% ====================================================================
+search(Regex, Option) ->
+    case file:consult(epax_os:get_abs_path("index.cfg")) of
+        {ok, [ExistingApps]} ->
+            AnyPackageFound = lists:foldl(
+                fun(App, Acc) ->
+                    Appname = App#application.name,
+                    IsPrint = (match == re:run(atom_to_list(Appname), Regex, [{capture, none}]))
+                              or (not proplists:get_value(names_only, Option, false)
+                              and (re:run(proplists:get_value(description, App#application.details, ""),
+                                          Regex,
+                                          [{capture, none}]) == match)),
+                    case IsPrint of
+                        true ->
+                            print_package(proplists:get_value(full, Option, false), App, Acc),
+                            true;
+                        false ->
+                            Acc
+                    end
+                end,
+                false,
+                ExistingApps),
+            case AnyPackageFound of
+                true ->
+                    epax_com:console("====================~n", []);
+                false ->
+                    epax_com:success("no package found")
+            end;
+        {error, _} ->
+            {error, "Run `epax init` before running other epax commands"}
+    end.
+
+
 %%%===================================================================
 %%% Internal Functions
 %%%===================================================================
@@ -277,4 +320,19 @@ try_cloning_again(AppInfo) ->
             epax_repo:clone_app(AppInfo#application.repo_link, [{repo_type, AppInfo#application.repo_type}]);
         Reason ->
             {error, Reason}
+    end.
+
+print_package(true, App, Acc) ->
+    case Acc of
+        true ->
+            epax_com:console("~s~n", [epax_app:format_app(App)]);
+        false ->
+            epax_com:success("~s", [epax_app:format_app(App)])
+    end;
+print_package(false, App, Acc) ->
+    case Acc of
+        true ->
+            epax_com:console("  - ~p~n", [App#application.name]);
+        false ->
+            epax_com:success("=== Erlang Apps ===~n  - ~p", [App#application.name])
     end.

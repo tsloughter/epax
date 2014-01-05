@@ -64,6 +64,23 @@ main(["bundle"|[Appname]]) ->
     epax_app:bundle(list_to_atom(Appname));
 main(["show"|[Appname]]) ->
     epax_app:show(list_to_atom(Appname));
+main(["search"|Args]) ->
+    OptSpecList = option_spec_list_for_search(),
+    case getopt:parse(OptSpecList, Args) of
+        {ok, {[help], []}} ->
+            print_help_for_search();
+        {ok, {_, []}} ->
+            epax_com:console("** Invalid command (regex not found).~n~n", []),
+            print_help_for_search();
+        {ok, {Options, [Regex]}} ->
+            epax_index:search(Regex, Options);
+        {ok, {_, NonOptArgs}} ->
+            epax_com:console("** Invalid non option arguments: ~p.~n~n", [NonOptArgs]),
+            print_help_for_search();
+        {error, {Reason, Data}} ->
+            epax_com:console("** Error: ~s ~p.~n", [Reason, Data]),
+            print_help_for_search()
+    end;
 main(Args) ->
     OptSpecList = option_spec_list(),
     case getopt:parse(OptSpecList, Args) of
@@ -109,8 +126,9 @@ Commands:
   remove <appname>    Remove the package from index
   update              Update details of all packages in the index
   check               Try to fix broken packages if any, updates the index as well
-  bundle <appname>    Figure out dependencies for the package and copies all non-standard packages
+  bundle <appname>    Compute and copy non-standard dependencies for the pacakge
   show   <appname>    Print detailed information of the package
+  search <regex>      Performs full text search on available package lists
 
 Options:
   -h, --help          Show the commands and options (this message)
@@ -134,3 +152,15 @@ option_spec_list_for_add() ->
 
 print_help_for_add() ->
     getopt:usage(option_spec_list_for_add(), ?EPAX).
+
+% help subcommand add
+option_spec_list_for_search() ->
+    [
+     %% {Name,     ShortOpt,  LongOpt,       ArgSpec,               HelpMsg}
+     {help,        $h,        "help",        undefined,             "Show the program options"},
+     {names_only,  $n,        "names-only",  boolean,               "Search only package names, not decription"},
+     {full,        $f,        "full",        boolean,               "Show output identical to `show` is produced for each matched package"}
+    ].
+
+print_help_for_search() ->
+    getopt:usage(option_spec_list_for_search(), ?EPAX).

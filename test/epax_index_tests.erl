@@ -564,3 +564,128 @@ update_index_test_() ->
                                                                          93],
                                                                         46,10]]))
     end}]}.
+
+
+search_test_() ->
+    {foreach,
+    fun() -> meck:new([epax_os, epax_com, epax_app, file], [unstick, passthrough]) end,
+    fun(_) -> meck:unload([epax_os, epax_com, epax_app, file]) end,
+    [{"test for search index",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[]}]]} end),
+        meck:expect(epax_com, success, fun("=== Erlang Apps ===~n  - ~p", [app1]) -> ok end),
+        meck:expect(epax_com, console, fun("  - ~p~n", [app2]) -> ok;
+                                          ("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("app", [])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [app1]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["====================~n", []]))
+    end},
+    {"test for search index when searched through description",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "app"}]}]]} end),
+        meck:expect(epax_com, success, fun("=== Erlang Apps ===~n  - ~p", [app1]) -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("erlang", [])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [app1]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["====================~n", []]))
+    end},
+    {"test for search index when no app found",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "app"}]}]]} end),
+        meck:expect(epax_com, success, fun("no package found") -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("erlang*app", [])),
+        ?assertEqual(0, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [app1]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["====================~n", []])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["no package found"]))
+    end},
+    {"test for search index when only names searched",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "app"}]}]]} end),
+        meck:expect(epax_com, success, fun("no package found") -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("erlang", [{names_only, true}])),
+        ?assertEqual(0, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [app1]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["====================~n", []])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["no package found"]))
+    end},
+    {"test for search index when only names searched II",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=app1, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "app"}]}]]} end),
+        meck:expect(epax_com, success, fun("no package found") -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("er.*", [{names_only, true}])),
+        ?assertEqual(0, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [app1]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["====================~n", []])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["no package found"]))
+    end},
+    {"test for search index when only names searched III",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}]]} end),
+        meck:expect(epax_com, success, fun("=== Erlang Apps ===~n  - ~p", [epax]) -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("epax", [{names_only, true}])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["=== Erlang Apps ===~n  - ~p", [epax]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["  - ~p~n", [app2]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["====================~n", []]))
+    end},
+    {"test for search index when full description printed",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}]]} end),
+        meck:expect(epax_app, format_app, fun(#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]}) -> "formatted epax" end),
+        meck:expect(epax_com, success, fun("~s", ["formatted epax"]) -> ok end),
+        meck:expect(epax_com, console, fun("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("epax", [{names_only, true}, {full, true}])),
+        ?assertEqual(1, meck:num_calls(epax_app, format_app, [#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]}])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s", ["formatted epax"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["====================~n", []]))
+    end},
+    {"test for search index when full description printed",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {ok, [[#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]},
+                                                              #application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}]]} end),
+        meck:expect(epax_app, format_app, fun(#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]}) -> "formatted epax";
+                                             (#application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}) -> "app2 formatted" end),
+        meck:expect(epax_com, success, fun("~s", ["formatted epax"]) -> ok end),
+        meck:expect(epax_com, console, fun("~s~n", ["app2 formatted"]) -> ok;
+                                          ("====================~n", []) -> ok end),
+        ?assertEqual(ok, epax_index:search("epax", [{full, true}])),
+        ?assertEqual(1, meck:num_calls(epax_app, format_app, [#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]}])),
+        ?assertEqual(1, meck:num_calls(epax_app, format_app, [#application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}])),
+        ?assertEqual(1, meck:num_calls(epax_com, success, ["~s", ["formatted epax"]])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["====================~n", []])),
+        ?assertEqual(1, meck:num_calls(epax_com, console, ["~s~n", ["app2 formatted"]]))
+    end},
+    {"test for search index when index file is not found",
+    fun() ->
+        meck:expect(epax_os, get_abs_path, fun(X) -> X end),
+        meck:expect(file, consult, fun("index.cfg") -> {error, "error"} end),
+
+        ?assertEqual({error, "Run `epax init` before running other epax commands"},
+                     epax_index:search("epax", [{full, true}])),
+        ?assertEqual(0, meck:num_calls(epax_app, format_app, [#application{name=epax, repo_link="link1", repo_type=git, details=[{description, "erlang app"}]}])),
+        ?assertEqual(0, meck:num_calls(epax_app, format_app, [#application{name=app2, repo_link="link2", repo_type=git, details=[{description, "alternative of epax"}]}])),
+        ?assertEqual(0, meck:num_calls(epax_com, success, ["~s", ["formatted epax"]])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["====================~n", []])),
+        ?assertEqual(0, meck:num_calls(epax_com, console, ["~s~n", ["app2 formatted"]]))
+    end}]}.
