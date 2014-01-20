@@ -13,7 +13,7 @@ The index contains the information about the OTP Application in the following fo
     Appname    :: atom(),
     LinkToRepo :: url(),
     RepoType   :: git | bzr | svn,
-    Info       :: {publisher, Publisher :: string()}
+    Info       :: {author, Author :: string()}
                 | {tags, [Tag :: string()]}
                 | {branches, [Branch :: string()]}
                 | {description, Description :: string()}

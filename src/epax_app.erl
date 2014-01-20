@@ -189,7 +189,7 @@ format_details(Appname, Details) ->
     end,
     epax_com:format([
         io_lib:format("~nStatus: ~s", ["installed"]),
-        io_lib:format("~nPublisher: ~s", [keyfind(publisher, 1, Details)]),
+        io_lib:format("~nAuthor: ~s", [keyfind(author, 1, Details)]),
         io_lib:format("~nLatest Version: ~s", [keyfind(tags, 1, Details)]),
         io_lib:format("~nDepends: ~s", [string:join(lists:map(fun atom_to_list/1, AllDeps), ", ")]),
         io_lib:format("~nDescription: ~s", [keyfind(description, 1, Details)])]).

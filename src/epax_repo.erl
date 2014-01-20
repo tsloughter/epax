@@ -126,7 +126,7 @@ get_info(RepoType, Link, Path) ->
     end.
 
 get_app_info(RepoType, Link, Path) ->
-    case find_publisher(Path) of
+    case find_author(Path) of
         {ok, {Appname, Description, Author}} ->
             {ok, #application{name=Appname,
                               repo_link=Link,
@@ -139,12 +139,12 @@ get_app_info(RepoType, Link, Path) ->
 get_details(git, Description, Author, Path) ->
     Tags = collect_tags(Path),
     Branches = collect_branches(Path),
-    [{description, Description}, {publisher, Author}, {tags, Tags}, {branches, Branches}];
+    [{description, Description}, {author, Author}, {tags, Tags}, {branches, Branches}];
 get_details(RepoType, Description, Author, Path) ->
     Rev = collect_max_rev(RepoType, Path),
-    [{description, Description}, {publisher, Author}, {max_rev, Rev}].
+    [{description, Description}, {author, Author}, {max_rev, Rev}].
 
-find_publisher(Path) ->
+find_author(Path) ->
     case epax_com:get_appfile_content(Path) of
         {ok, [Info]} ->
             Appname = element(2, Info),
